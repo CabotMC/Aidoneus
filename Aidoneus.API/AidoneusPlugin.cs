@@ -11,3 +11,8 @@ public class AidoneusPlugin : Attribute
         return new Version(minVersion);
     }
 }
+
+public interface AidoneusPluginEntry
+{
+    public void Initialize();
+}
