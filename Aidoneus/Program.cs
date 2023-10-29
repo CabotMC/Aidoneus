@@ -7,6 +7,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Victoria;
+using Victoria.Node;
 
 namespace Aidoneus;
 
@@ -33,7 +34,9 @@ public class Program
             i.AddConsole();
         });
         collection.AddSingleton(client);
-        collection.AddSingleton<InteractionService>();
+        collection.AddSingleton(new InteractionService(client, new InteractionServiceConfig {
+            LogLevel = LogSeverity.Verbose
+        }));
         collection.AddSingleton<PluginLoader>();
         collection.AddLavaNode(node => {
             node.SelfDeaf = false;
@@ -68,7 +71,7 @@ public class Program
 
         var interactionService = _serviceProvider.GetRequiredService<InteractionService>();
         var pluginLoader = _serviceProvider.GetRequiredService<PluginLoader>();
-        pluginLoader.LoadAssemblies("/plugins");
+        pluginLoader.LoadAssemblies(Environment.GetEnvironmentVariable("AIDONEUS_PLUGINS_DIR") ?? "/plugins");
         pluginLoader.RunInitalizers();
 
         await interactionService.AddModulesAsync(Assembly.GetExecutingAssembly(), _serviceProvider);
@@ -84,8 +87,14 @@ public class Program
         client.InteractionCreated += async (x) => {
             var ctx = new SocketInteractionContext(client, x);
             var commandResult = await interactionService.ExecuteCommandAsync(ctx, _serviceProvider);
-            if (commandResult.Error != null) {
-                Console.WriteLine(commandResult.Error.Value.ToString());
+            if (!commandResult.IsSuccess) {
+                // create error embed 
+                var embed = new EmbedBuilder()
+                    .WithTitle("Internal Command Error - " + commandResult.ErrorReason)
+                    .WithDescription(commandResult.Error?.ToString() ?? "No other information")
+                    .WithColor(Color.Red)
+                    .Build();
+                await x.FollowupAsync(embed: embed, ephemeral: true);
             }
 
         };
@@ -95,6 +104,8 @@ public class Program
             Console.WriteLine("Registering commands..");
             var registered = await interactionService.RegisterCommandsToGuildAsync(ulong.Parse(targetGuild));
             Console.WriteLine($"Registered {registered.Count()} commands");
+            var srv = _serviceProvider.GetRequiredService<LavaNode>();
+            await srv.ConnectAsync();
         };
         await Task.Delay(Timeout.Infinite); 
     }
