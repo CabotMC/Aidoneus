@@ -14,7 +14,7 @@ you can generate plain executable files by running the following:
 ```
 dotnet publish -c Release -o out Aidoneus/Aidoneus.csproj
 ```
-The generatied binaries will be in the `out` directory.
+The generated binaries will be in the `out` directory.
 
 ## Building the music plugin
 The music plugin is an example plugin that most people probably want to use. It provides basic Youtube playback through a few commands.
@@ -52,9 +52,9 @@ If running without Docker, make sure to set the enviroment variable `AIDONEUS_PL
 
 ### Installing Plugins
 
-To install a plugin, drag it's DLL into the plugins folder. If using the `docker-compose.yml` given above, there will be a directory named `plugins` which they can be placed into.
+To install a plugin, place it's DLL into the plugins folder. If using the `docker-compose.yml` given above, there will be a directory named `plugins` which they can be placed into.
 
-You may also drag non-plugin DLLs into the plugins folder, and they will be loaded into the runtime.
+You may also place non-plugin DLLs into the plugins folder, and they will be loaded into the runtime.
 
 ## Plugin Development
 
