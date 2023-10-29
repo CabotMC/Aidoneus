@@ -5,6 +5,7 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Victoria;
 
 namespace Aidoneus;
@@ -27,6 +28,9 @@ public class Program
         var client = new DiscordSocketClient(new DiscordSocketConfig
         {
             LogLevel = LogSeverity.Verbose
+        });
+        collection.AddLogging(i => {
+            i.AddConsole();
         });
         collection.AddSingleton(client);
         collection.AddSingleton<InteractionService>();
