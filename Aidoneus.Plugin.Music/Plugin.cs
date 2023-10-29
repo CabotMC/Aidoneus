@@ -5,7 +5,7 @@ using Victoria.Node;
 
 namespace Aidoneus.Plugin.Music;
 
-[AidoneusPlugin(minVersion = "1.0.1")]
+[AidoneusPlugin(minVersion = "1.0.3")]
 public class Plugin : AidoneusPluginEntry
 {
     LavaNode _node;

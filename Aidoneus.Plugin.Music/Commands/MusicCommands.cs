@@ -30,6 +30,10 @@ public class MusicCommands : InteractionModuleBase {
         }
 
         var track = search.Tracks.FirstOrDefault();
+        if (track == null) {
+            await RespondAsync("No tracks found", ephemeral: true);
+            return;
+        }
         if (player.PlayerState == PlayerState.Playing || player.PlayerState == PlayerState.Paused) {
             player.Vueue.Enqueue(track);
             await RespondAsync($"Enqueued {track.Title}", ephemeral: true);
