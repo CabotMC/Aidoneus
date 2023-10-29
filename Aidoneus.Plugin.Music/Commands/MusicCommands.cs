@@ -32,10 +32,10 @@ public class MusicCommands : InteractionModuleBase {
         var track = search.Tracks.FirstOrDefault();
         if (player.PlayerState == PlayerState.Playing || player.PlayerState == PlayerState.Paused) {
             player.Vueue.Enqueue(track);
-            await RespondAsync($"Enqueued {track.Title}");
+            await RespondAsync($"Enqueued {track.Title}", ephemeral: true);
         } else {
             await player.PlayAsync(track);
-            await RespondAsync($"Now Playing {track.Title}");
+            await RespondAsync($"Now Playing {track.Title}", ephemeral: true);
         }
     }
 
@@ -49,7 +49,7 @@ public class MusicCommands : InteractionModuleBase {
         }
 
         await _lavaNode.LeaveAsync(player.VoiceChannel);
-        await RespondAsync("Stopped player");
+        await RespondAsync("Stopped player", ephemeral: true);
     }
 
     [RequireContext(ContextType.Guild), RequireVoiceConnection()]
@@ -60,6 +60,8 @@ public class MusicCommands : InteractionModuleBase {
             await RespondAsync("No player found", ephemeral: true);
             return;
         }
-        await player.SkipAsync();
+        await player.StopAsync();
+        await RespondAsync("Skipped track", ephemeral: true);
+        
     }
 }
