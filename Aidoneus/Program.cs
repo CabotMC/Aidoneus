@@ -1,11 +1,11 @@
 ﻿
 using System.Reflection;
-using Aidoneus.API;
 using Aidoneus.Plugins;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
+using Victoria;
 
 namespace Aidoneus;
 
@@ -24,13 +24,17 @@ public class Program
     static IServiceProvider CreateProvider()
     {
         var collection = new ServiceCollection();
-        collection.AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
+        var client = new DiscordSocketClient(new DiscordSocketConfig
         {
             LogLevel = LogSeverity.Verbose
-        }));
-        collection.AddSingleton<DiscordSocketClient>();
+        });
+        collection.AddSingleton(client);
         collection.AddSingleton<InteractionService>();
         collection.AddSingleton<PluginLoader>();
+        collection.AddLavaNode(node => {
+            node.SelfDeaf = false;
+            node.Hostname = Environment.GetEnvironmentVariable("AIDONEUS_LAVA_HOST") ?? "localhost";
+        });
         return collection.BuildServiceProvider();
     }
 
@@ -60,8 +64,8 @@ public class Program
 
         var interactionService = _serviceProvider.GetRequiredService<InteractionService>();
         var pluginLoader = _serviceProvider.GetRequiredService<PluginLoader>();
-        /*pluginLoader.LoadAssemblies("Plugins");
-        pluginLoader.RunInitalizers();*/
+        pluginLoader.LoadAssemblies("/plugins");
+        pluginLoader.RunInitalizers();
 
         await interactionService.AddModulesAsync(Assembly.GetExecutingAssembly(), _serviceProvider);
         foreach (var plugin in pluginLoader.LoadedPlugins) {

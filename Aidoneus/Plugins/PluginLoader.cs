@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Reflection;
 using Aidoneus.API;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,7 +28,13 @@ public class PluginLoader {
         foreach (var assembly in assemblies) {
             Type? foundType = null;
             foreach (var type in assembly.GetTypes()) {
-                if (type.GetCustomAttribute<AidoneusPlugin>() != null) {
+                var attr = type.GetCustomAttribute<AidoneusPlugin>();
+                if (attr != null) {
+                    // halt process if the plugin is not compatible with the current version
+                    if (attr.AsVersion() > Assembly.GetEntryAssembly()?.GetName().Version) {
+                        Console.WriteLine($"FATAL: Plugin {assembly.GetName().Name} v{assembly.GetName().Version} is not compatible with this version of Aidoneus");
+                        Environment.Exit(1);
+                    }
                     foundType = type;
                     break;
                 }
