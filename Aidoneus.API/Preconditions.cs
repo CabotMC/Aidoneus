@@ -3,7 +3,7 @@ using Discord.Interactions;
 
 namespace Aidoneus.API.Preconditions;
 
-public class RequiresVoiceConnection : PreconditionAttribute
+public class RequireVoiceConnection : PreconditionAttribute
 {
     public override async Task<PreconditionResult> CheckRequirementsAsync(IInteractionContext context, ICommandInfo commandInfo, IServiceProvider services)
     {
