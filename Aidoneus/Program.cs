@@ -14,10 +14,12 @@ namespace Aidoneus;
 public class Program
 {
     private readonly IServiceProvider _serviceProvider;
+    private ILogger<Program> _logger;
 
     public Program()
     {
         _serviceProvider = CreateProvider();
+        _logger = _serviceProvider.GetRequiredService<ILogger<Program>>();
     }
 
     static void Main(string[] args)
@@ -49,19 +51,19 @@ public class Program
     {
         var version = Assembly.GetEntryAssembly()?.GetName().Version;
         if (version == null) {
-            Console.WriteLine("FATAL: Could not get version");
+            _logger.LogCritical("Could not get version");
             return;
         }
         Console.WriteLine($"Aidoneus v{version.Major}.{version.Minor}.{version.Build}");
         var token = Environment.GetEnvironmentVariable("AIDONEUS_TOKEN");
         if (token == null) {
-            Console.WriteLine("FATAL: AIDONEUS_TOKEN not set");
+            _logger.LogCritical("AIDONEUS_TOKEN not set");
             return;
         }
 
         var targetGuild = Environment.GetEnvironmentVariable("AIDONEUS_GUILD");
         if (targetGuild == null) {
-            Console.WriteLine("FATAL: AIDONEUS_GUILD not set");
+            _logger.LogCritical("AIDONEUS_GUILD not set");
             return;
         }
 
@@ -72,12 +74,12 @@ public class Program
         var interactionService = _serviceProvider.GetRequiredService<InteractionService>();
         var pluginLoader = _serviceProvider.GetRequiredService<PluginLoader>();
         pluginLoader.LoadAssemblies(Environment.GetEnvironmentVariable("AIDONEUS_PLUGINS_DIR") ?? "/plugins");
-        pluginLoader.RunInitalizers();
+        
 
         await interactionService.AddModulesAsync(Assembly.GetExecutingAssembly(), _serviceProvider);
         foreach (var plugin in pluginLoader.LoadedPlugins) {
             var loaded = await interactionService.AddModulesAsync(plugin.Assembly, _serviceProvider);
-            Console.WriteLine($"Loaded {loaded.Count()} modules from {plugin.Assembly.GetName().Name}");
+            _logger.LogInformation($"Loaded {loaded.Count()} modules from {plugin.Assembly.GetName().Name}");
         }
 
         
@@ -100,12 +102,12 @@ public class Program
         };
 
         client.Ready += async () => {
-            Console.WriteLine("Client ready!");
-            Console.WriteLine("Registering commands..");
+            _logger.LogInformation("Client ready");
             var registered = await interactionService.RegisterCommandsToGuildAsync(ulong.Parse(targetGuild));
-            Console.WriteLine($"Registered {registered.Count()} commands");
+            _logger.LogInformation($"Registered {registered.Count()} commands");
             var srv = _serviceProvider.GetRequiredService<LavaNode>();
             await srv.ConnectAsync();
+            pluginLoader.RunInitalizers();
         };
         await Task.Delay(Timeout.Infinite); 
     }

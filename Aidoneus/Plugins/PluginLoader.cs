@@ -1,7 +1,9 @@
+using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Reflection;
 using Aidoneus.API;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Aidoneus.Plugins;
 
@@ -10,9 +12,11 @@ public class PluginLoader {
     IServiceProvider _serviceProvider;
     public List<PluginSpec> LoadedPlugins = new(); 
     public List<Assembly> LoadedDependencies = new();
+    ILogger<PluginLoader> _logger;
 
-    public PluginLoader(IServiceProvider serviceProvider) {
+    public PluginLoader(IServiceProvider serviceProvider, ILogger<PluginLoader> logger) {
         _serviceProvider = serviceProvider;
+        _logger = logger;
     }
 
     public int LoadAssemblies(string basePath) {
@@ -32,7 +36,7 @@ public class PluginLoader {
                 if (attr != null) {
                     // halt process if the plugin is not compatible with the current version
                     if (attr.AsVersion() > Assembly.GetEntryAssembly()?.GetName().Version) {
-                        Console.WriteLine($"FATAL: Plugin {assembly.GetName().Name} v{assembly.GetName().Version} is not compatible with this version of Aidoneus");
+                        _logger.LogCritical($"Plugin {assembly.GetName().Name} v{assembly.GetName().Version} is not compatible with this version of Aidoneus");
                         Environment.Exit(1);
                     }
                     foundType = type;
@@ -41,7 +45,7 @@ public class PluginLoader {
             }
             if (foundType != null) {
                 LoadedPlugins.Add(new PluginSpec(assembly, foundType));
-                Console.WriteLine($"Loaded plugin {assembly.GetName().Name} v{assembly.GetName().Version}");
+                _logger.LogInformation($"Loaded plugin {assembly.GetName().Name} v{assembly.GetName().Version}");
             } else {
                 LoadedDependencies.Add(assembly);
             }
@@ -55,7 +59,7 @@ public class PluginLoader {
                 var instance = ActivatorUtilities.CreateInstance(_serviceProvider, plugin.EntryPoint);
                 var method = plugin.EntryPoint.GetMethod("Initialize");
                 method?.Invoke(instance, null);
-                Console.WriteLine($"Initialized plugin {plugin.Assembly.GetName().Name} v{plugin.Assembly.GetName().Version}");
+                _logger.LogInformation($"Initialized plugin {plugin.Assembly.GetName().Name} v{plugin.Assembly.GetName().Version}");
             }
         }
     }
