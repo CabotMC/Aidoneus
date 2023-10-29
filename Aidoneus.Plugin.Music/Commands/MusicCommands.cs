@@ -1,11 +1,65 @@
+using Aidoneus.API.Preconditions;
+using Discord;
 using Discord.Interactions;
+using Victoria.Node;
+using Victoria.Player;
+using Victoria.Responses.Search;
 
 namespace Aidoneus.Plugin.Music.Commands;
 
 public class MusicCommands : InteractionModuleBase {
 
+    LavaNode _lavaNode;
+    public MusicCommands(LavaNode lavaNode) {
+        _lavaNode = lavaNode;
+    }
+
+    [RequireContext(ContextType.Guild)]
+    [RequireVoiceConnection()]
     [SlashCommand("play", "Queue a song")]
     public async Task Queue(string query) {
-        await RespondAsync($"You asked for {query}", ephemeral: true);
+        var existingPlayer = _lavaNode.TryGetPlayer(Context.Guild, out var player);
+        var guildUser = await Context.Guild.GetUserAsync(Context.User.Id);
+        if (!existingPlayer) {
+            player = await _lavaNode.JoinAsync(guildUser.VoiceChannel, Context.Channel as ITextChannel);
+        }
+        var search = await _lavaNode.SearchAsync(SearchType.YouTube, query);
+        if (search.Status == SearchStatus.LoadFailed || search.Status == SearchStatus.NoMatches) {
+            await RespondAsync("Error searching for tracks", ephemeral: true);
+            return;
+        }
+
+        var track = search.Tracks.FirstOrDefault();
+        if (player.PlayerState == PlayerState.Playing || player.PlayerState == PlayerState.Paused) {
+            player.Vueue.Enqueue(track);
+            await RespondAsync($"Enqueued {track.Title}");
+        } else {
+            await player.PlayAsync(track);
+            await RespondAsync($"Now Playing {track.Title}");
+        }
+    }
+
+    [RequireContext(ContextType.Guild)]
+    [SlashCommand("stop", "Stop the player")]
+    public async Task Stop() {
+        var existingPlayer = _lavaNode.TryGetPlayer(Context.Guild, out var player);
+        if (!existingPlayer) {
+            await RespondAsync("No player found", ephemeral: true);
+            return;
+        }
+
+        await _lavaNode.LeaveAsync(player.VoiceChannel);
+        await RespondAsync("Stopped player");
+    }
+
+    [RequireContext(ContextType.Guild), RequireVoiceConnection()]
+    [SlashCommand("skip", "Skip the current track")]
+    public async Task Skip() {
+        var existingPlayer = _lavaNode.TryGetPlayer(Context.Guild, out var player);
+        if (!existingPlayer) {
+            await RespondAsync("No player found", ephemeral: true);
+            return;
+        }
+        await player.SkipAsync();
     }
 }
