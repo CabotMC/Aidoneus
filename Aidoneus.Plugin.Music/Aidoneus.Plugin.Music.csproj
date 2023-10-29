@@ -7,6 +7,9 @@
     <Version>1.0.4.1</Version>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Aidoneus.API\Aidoneus.API.csproj" />
+    <ProjectReference Include="..\Aidoneus.API\Aidoneus.API.csproj">
+      <ExcludeAssets>runtime</ExcludeAssets>
+      <Private>false</Private>
+    </ProjectReference>
   </ItemGroup>
 </Project>

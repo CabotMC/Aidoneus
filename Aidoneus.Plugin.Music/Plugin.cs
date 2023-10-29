@@ -1,22 +1,26 @@
 ﻿using Aidoneus.API;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Victoria;
 using Victoria.Node;
 
 namespace Aidoneus.Plugin.Music;
 
 [AidoneusPlugin(minVersion = "1.0.3")]
-public class Plugin : AidoneusPluginEntry
+public class MusicPlugin : AidoneusPluginEntry
 {
     LavaNode _node;
     MusicService _service;
 
-    public Plugin(LavaNode node) {
+    ILogger<MusicPlugin> _logger;
+
+    public MusicPlugin(LavaNode node, ILogger<MusicPlugin> logger) {
         _node = node;
         _service = new MusicService(node);
+        _logger = logger;
     }
     public void Initialize()
     {
-        Console.WriteLine("Hello from music!");
+        _logger.LogInformation("Music plugin initialized");
     }
 }
