@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aidoneus", "Aidoneus\Aidone
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aidoneus.API", "Aidoneus.API\Aidoneus.API.csproj", "{B3EA3CDB-5639-43C5-9D97-8F9BC8E16F1E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aidoneus.Plugin.Music", "Aidoneus.Plugin.Music\Aidoneus.Plugin.Music.csproj", "{974B14C1-6845-4899-AA77-35E800B0911E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{B3EA3CDB-5639-43C5-9D97-8F9BC8E16F1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B3EA3CDB-5639-43C5-9D97-8F9BC8E16F1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B3EA3CDB-5639-43C5-9D97-8F9BC8E16F1E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{974B14C1-6845-4899-AA77-35E800B0911E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{974B14C1-6845-4899-AA77-35E800B0911E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{974B14C1-6845-4899-AA77-35E800B0911E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{974B14C1-6845-4899-AA77-35E800B0911E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
