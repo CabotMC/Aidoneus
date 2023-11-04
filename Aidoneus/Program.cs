@@ -74,7 +74,7 @@ public class Program
         var interactionService = _serviceProvider.GetRequiredService<InteractionService>();
         var pluginLoader = _serviceProvider.GetRequiredService<PluginLoader>();
         pluginLoader.LoadAssemblies(Environment.GetEnvironmentVariable("AIDONEUS_PLUGINS_DIR") ?? "/plugins");
-        
+            
 
         await interactionService.AddModulesAsync(Assembly.GetExecutingAssembly(), _serviceProvider);
         foreach (var plugin in pluginLoader.LoadedPlugins) {
@@ -102,6 +102,14 @@ public class Program
         };
 
         client.Ready += async () => {
+
+            // remove global commands if we were asked to
+            if (Environment.GetEnvironmentVariable("AIDONEUS_REMOVE_GLOBALS") == "1")
+            {
+                _logger.LogInformation("Removing global commands");
+                await client.Rest.DeleteAllGlobalCommandsAsync();
+            }
+
             _logger.LogInformation("Client ready");
             var registered = await interactionService.RegisterCommandsToGuildAsync(ulong.Parse(targetGuild));
             _logger.LogInformation($"Registered {registered.Count()} commands");
