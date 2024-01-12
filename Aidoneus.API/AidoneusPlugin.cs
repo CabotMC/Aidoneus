@@ -1,4 +1,6 @@
-﻿namespace Aidoneus.API;
+﻿using Aidoneus.API.Persistence;
+
+namespace Aidoneus.API;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
 public class AidoneusPlugin : Attribute
@@ -11,8 +13,15 @@ public class AidoneusPlugin : Attribute
         return new Version(minVersion);
     }
 }
-
-public interface AidoneusPluginEntry
+public abstract class AidoneusPluginEntry
 {
-    public void Initialize();
+#pragma warning disable CS8618 
+    private IPluginPersistenceProvider _persistence;
+#pragma warning restore CS8618 
+    public abstract void Initialize();
+
+    protected IPluginPersistenceProvider GetPersistence()
+    {
+        return _persistence;
+    }
 }

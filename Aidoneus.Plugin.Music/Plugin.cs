@@ -19,7 +19,7 @@ public class MusicPlugin : AidoneusPluginEntry
         _service = new MusicService(node);
         _logger = logger;
     }
-    public void Initialize()
+    public override void Initialize()
     {
         _logger.LogInformation("Music plugin initialized");
     }

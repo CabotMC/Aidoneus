@@ -117,6 +117,15 @@ public class Program
             await srv.ConnectAsync();
             pluginLoader.RunInitalizers();
         };
+        AppDomain.CurrentDomain.ProcessExit += async (x, y) => {
+            _logger.LogInformation("Saving plugin data");
+            foreach (var p in pluginLoader.LoadedPlugins)
+            {
+                ((FileBackedPluginStorage?) p.PersistenceProvider)?.Save();
+            }
+            _logger.LogInformation("Saved");
+        };
         await Task.Delay(Timeout.Infinite); 
+        
     }
 }

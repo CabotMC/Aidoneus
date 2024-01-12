@@ -1,7 +1,9 @@
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Aidoneus.API;
+using Aidoneus.API.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -20,6 +22,11 @@ public class PluginLoader {
     }
 
     public int LoadAssemblies(string basePath) {
+        var configFolder = Path.Combine(basePath, "config");
+        if (!Directory.Exists(configFolder)) {
+            Directory.CreateDirectory(configFolder);
+        }
+        
         var files = Directory.GetFiles(basePath);
         var assemblies = new List<Assembly>();
 
@@ -43,8 +50,12 @@ public class PluginLoader {
                     break;
                 }
             }
-            if (foundType != null) {
-                LoadedPlugins.Add(new PluginSpec(assembly, foundType));
+            if (foundType != null)
+            {
+                var configName = (assembly.GetName().Name ??
+                                  ((GuidAttribute) assembly.GetCustomAttributes(typeof(GuidAttribute), true)[0]).Value)
+                            + ".json";
+                LoadedPlugins.Add(new PluginSpec(assembly, foundType, Path.Combine(configFolder, configName)));
                 _logger.LogInformation($"Loaded plugin {assembly.GetName().Name} v{assembly.GetName().Version}");
             } else {
                 LoadedDependencies.Add(assembly);
@@ -60,20 +71,33 @@ public class PluginLoader {
                 var method = plugin.EntryPoint.GetMethod("Initialize");
                 method?.Invoke(instance, null);
                 _logger.LogInformation($"Initialized plugin {plugin.Assembly.GetName().Name} v{plugin.Assembly.GetName().Version}");
+                
+                // create persistence provider
+
+                var provider = new FileBackedPluginStorage(plugin.ConfigFile);
+                plugin.PersistenceProvider = provider;
+                var persistenceField = plugin.EntryPoint.GetField("_persistence", BindingFlags.NonPublic | BindingFlags.Instance);
+                persistenceField?.SetValue(instance, provider);
+                _logger.LogInformation(
+                    $"Initialized storage provider for plugin {plugin.Assembly.GetName().Name} v{plugin.Assembly.GetName().Version} in file {plugin.ConfigFile}"
+                    );
             }
         }
     }
-
-
 }
 
 
 public class PluginSpec {
     public Assembly Assembly {get; set;}
     public Type EntryPoint {get; set;}
+    
+    public string ConfigFile {get; set;}
+    
+    public IPluginPersistenceProvider? PersistenceProvider {get; set;}
 
-    public PluginSpec(Assembly assembly, Type pluginType) {
+    public PluginSpec(Assembly assembly, Type pluginType, string configFile) {
         Assembly = assembly;
         EntryPoint = pluginType;
+        ConfigFile = configFile;
     }
 }
