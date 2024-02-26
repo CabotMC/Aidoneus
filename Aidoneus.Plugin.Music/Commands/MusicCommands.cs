@@ -1,3 +1,4 @@
+using System.Text;
 using Aidoneus.API.Preconditions;
 using Discord;
 using Discord.Interactions;
@@ -15,7 +16,7 @@ public class MusicCommands : InteractionModuleBase {
     }
 
     [RequireContext(ContextType.Guild)]
-    [RequireVoiceConnection()]
+    [RequireVoiceConnection]
     [SlashCommand("play", "Queue a song")]
     public async Task Queue(string query) {
         var existingPlayer = _lavaNode.TryGetPlayer(Context.Guild, out var player);
@@ -67,5 +68,26 @@ public class MusicCommands : InteractionModuleBase {
         await player.StopAsync();
         await RespondAsync("Skipped track", ephemeral: true);
         
+    }
+
+    [RequireContext(ContextType.Guild), RequireVoiceConnection]
+    [SlashCommand("queue", "Show the current queue")]
+    public async Task Queue()
+    {
+        
+        var existingPlayer = _lavaNode.TryGetPlayer(Context.Guild, out var player);
+        if (!existingPlayer) {
+            await RespondAsync("No player found", ephemeral: true);
+            return;
+        }
+
+        var queue = player.Vueue.ToArray();
+        var result = new StringBuilder("```\n");
+        result.Append("Now Playing:\n " + player.Track.Title + "\n\n");
+        for (var i = 0; i < queue.Length; i++) {
+            result.Append($"{i + 1}. {queue[i].Title}\n");
+        }
+        result.Append("```");
+        await RespondAsync(result.ToString());
     }
 }
