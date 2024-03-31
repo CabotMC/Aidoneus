@@ -18,7 +18,7 @@ public class FileBackedPluginStorage : IPluginPersistenceProvider
         }
         else
         {
-            _cache = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(File.ReadAllText(fileName));
+            _cache = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(File.ReadAllText(fileName))!;
         }
         
     }
