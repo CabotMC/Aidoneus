@@ -8,6 +8,13 @@ using Victoria.Responses.Search;
 
 namespace Aidoneus.Plugin.Music.Commands;
 
+public enum SearchOptions {
+    YouTube = SearchType.YouTube,
+    Soundcloud = SearchType.SoundCloud,
+    [ChoiceDisplay("Youtube Music")]
+    YoutubeMusic = SearchType.YouTubeMusic
+}
+
 public class MusicCommands : InteractionModuleBase {
 
     LavaNode _lavaNode;
@@ -18,13 +25,13 @@ public class MusicCommands : InteractionModuleBase {
     [RequireContext(ContextType.Guild)]
     [RequireVoiceConnection]
     [SlashCommand("play", "Queue a song")]
-    public async Task Queue(string query) {
+    public async Task Queue(string query, SearchOptions searchType = SearchOptions.Soundcloud) {
         var existingPlayer = _lavaNode.TryGetPlayer(Context.Guild, out var player);
         var guildUser = await Context.Guild.GetUserAsync(Context.User.Id);
         if (!existingPlayer) {
             player = await _lavaNode.JoinAsync(guildUser.VoiceChannel, Context.Channel as ITextChannel);
         }
-        var search = await _lavaNode.SearchAsync(SearchType.YouTube, query);
+        var search = await _lavaNode.SearchAsync((SearchType) searchType, query);
         if (search.Status == SearchStatus.LoadFailed || search.Status == SearchStatus.NoMatches) {
             await RespondAsync("Error searching for tracks", ephemeral: true);
             return;
