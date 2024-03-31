@@ -33,13 +33,13 @@ public class MusicCommands : InteractionModuleBase {
         }
         var search = await _lavaNode.SearchAsync((SearchType) searchType, query);
         if (search.Status == SearchStatus.LoadFailed || search.Status == SearchStatus.NoMatches) {
-            await RespondAsync("Error searching for tracks", ephemeral: true);
+            await RespondAsync("Error searching for tracks", ephemeral: false);
             return;
         }
 
         var track = search.Tracks.FirstOrDefault();
         if (track == null) {
-            await RespondAsync("No tracks found", ephemeral: true);
+            await RespondAsync("No tracks found", ephemeral: false);
             return;
         }
         if (player.PlayerState == PlayerState.Playing || player.PlayerState == PlayerState.Paused) {
@@ -47,7 +47,7 @@ public class MusicCommands : InteractionModuleBase {
             await RespondAsync($"Enqueued {track.Title}", ephemeral: true);
         } else {
             await player.PlayAsync(track);
-            await RespondAsync($"Now Playing {track.Title}", ephemeral: true);
+            await RespondAsync($"Now Playing {track.Title}", ephemeral: false);
         }
     }
 
